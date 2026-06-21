@@ -16,6 +16,8 @@ from pathlib import Path
 
 from flask import Flask, jsonify, render_template, request
 
+import yene_io
+
 app = Flask(__name__)
 HERE = Path(__file__).parent.resolve()
 
@@ -79,6 +81,11 @@ def all_files() -> list[dict]:
                 "source": source,
                 "meta":   meta,
             })
+    # Yene archives (SQLite) — read-only article sources for analysis
+    for entry in yene_io.list_yene_sources():
+        if entry["name"] not in seen:
+            files.append(entry)
+            seen.add(entry["name"])
     return files
 
 
@@ -110,15 +117,20 @@ def analyse():
     if not filename or ".." in filename or "/" in filename or "\\" in filename:
         return jsonify({"error": "Invalid filename"}), 400
 
-    filepath = find_file(filename)
-    if not filepath:
-        return jsonify({"error": "File not found"}), 404
-
-    try:
-        with open(filepath, encoding="utf-8-sig", newline="") as f:
-            rows = list(csv.DictReader(f))
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if yene_io.is_yene_name(filename):
+        try:
+            rows = yene_io.load_yene_rows(filename)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    else:
+        filepath = find_file(filename)
+        if not filepath:
+            return jsonify({"error": "File not found"}), 404
+        try:
+            with open(filepath, encoding="utf-8-sig", newline="") as f:
+                rows = list(csv.DictReader(f))
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
     if not rows:
         return jsonify({"error": "Empty file"}), 400

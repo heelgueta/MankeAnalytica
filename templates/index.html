@@ -60,6 +60,7 @@
   .ftag.narki  { background: rgba(212,168,106,.1);  color: #d4a86a; border-color: rgba(212,168,106,.3); }
   .ftag.filu   { background: rgba(139,196,76,.1);   color: #8bc44c; border-color: rgba(139,196,76,.3); }
   .ftag.culpem { background: rgba(232,115,58,.1);   color: #e8733a; border-color: rgba(232,115,58,.3); }
+  .ftag.yene   { background: rgba(46,127,216,.12);  color: #2e7fd8; border-color: rgba(46,127,216,.35); }
   .ftag.info   { background: rgba(155,125,212,.1);  color: var(--accent); border-color: rgba(155,125,212,.25); }
   .empty { color: var(--muted); font-size: 12px; font-style: italic; padding: 6px 0; }
 
@@ -224,6 +225,8 @@ async function loadFiles() {
       if (m.n_articles || m.n_output || m.n_rows)
         tags.push((m.n_articles || m.n_output || m.n_rows) + ' filas');
       if (m.created_at)  tags.push(m.created_at.slice(0,10));
+      if (m.min_date && m.max_date)
+        tags.push(m.min_date.slice(0,10) + ' → ' + m.max_date.slice(0,10));
 
       const card = document.createElement('div');
       card.className = 'file-card';
